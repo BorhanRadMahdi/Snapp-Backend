@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { handleSrvCliResponse } from "response/httpException.filter";
-import { DriverSignUpInputDto, DriverVerifyOtpInputDto } from "src/dtos/driver.dto";
+import { DriverRequestOtpInputDto, DriverVerifyOtpInputDto } from "src/dtos/driver.dto";
 import { MainServiceClient } from "src/services/main.service";
 
 
@@ -11,13 +11,13 @@ export class DriverAuthService {
     constructor(private readonly mainSrvCli: MainServiceClient) {}
 
 
-    async requestOtp(body: DriverSignUpInputDto) {
+    async requestOtp(body: DriverRequestOtpInputDto) {
         const data = await this.mainSrvCli.callAction({
             provider: 'DRIVERS',
             action: 'requestOtp',
             query: body,
-        }); 
-        
+        });
+
         return handleSrvCliResponse(data);
     }
       async verifyOtp(body: DriverVerifyOtpInputDto) {
@@ -38,4 +38,4 @@ export class DriverAuthService {
     });
     return handleSrvCliResponse(data);
   }
-} 
+}
