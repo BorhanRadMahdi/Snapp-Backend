@@ -1,19 +1,47 @@
-import { Controller, Post } from "@nestjs/common";
-import { DriverAuthService } from "./auth.service";
-import { ApiOperation} from "@nestjs/swagger";
-import { DriverSignUpInputDto } from 'src/dtos/driver.dto';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  UseFilters,
+  UseGuards,
+  UseInterceptors,
+  Request,
+} from '@nestjs/common';
+import { DriverAuthService } from './auth.service';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import { DriverRequestOtpInputDto, DriverVerifyOtpInputDto } from 'src/dtos/driver.dto';
+import { HttpExceptionFilter } from 'src/response/httpException.filter';
+import { ResponseInterceptor } from 'src/response/response.interceptors';
+import { DriverAuthGuard } from './auth.guard';
+import { Public } from 'src/common/decorators/public.decorator';
 
-
-
-@Controller('Auth')
+@ApiTags('Driver:Auth')
+@Controller('driver/auth')
+@ApiBearerAuth('Authorization')
+@UseGuards(DriverAuthGuard)
+@UseFilters(HttpExceptionFilter)
+@UseInterceptors(ResponseInterceptor)
 export class DriverAuthController {
-    constructor(
-        private readonly driverAuthService: DriverAuthService,) {}
+  constructor(private readonly driverAuthService: DriverAuthService) {}
 
-        @Post('signup')
-        @ApiOperation({ summary: 'Signup in app by phone number' })
-        async signup(body: DriverSignUpInputDto) {
-            const signupData = await this.driverAuthService.signup(body);
-            return signupData;
-        }
-    }
+  @Post('request-otp')
+  @Public()
+  @ApiOperation({ summary: 'Request otp in app by phone number' })
+  async requestOtp(@Body() body: DriverRequestOtpInputDto) {
+    return await this.driverAuthService.requestOtp(body);
+  }
+
+  @Post('verify-otp')
+  @Public()
+  @ApiOperation({ summary: 'Verify otp sent to driver phone number' })
+  async verifyOtp(@Body() body: DriverVerifyOtpInputDto) {
+    return await this.driverAuthService.verifyOtp(body);
+  }
+
+  @Get('/profile')
+  @ApiOperation({ summary: 'Get driver profile' })
+  async getProfile(@Request() req) {
+    return req.driver;
+  }
+}

@@ -1,0 +1,45 @@
+import { Inject, Injectable, HttpStatus, Logger } from "@nestjs/common";
+import { ClientProxy } from "@nestjs/microservices";
+import { lastValueFrom } from "rxjs";
+
+
+
+@Injectable()
+export class MainServiceClient {
+
+    constructor(
+        @Inject('Main') private readonly cli:ClientProxy
+    ) {}
+
+    async callEvent(data) {
+        try{
+            const res:any = await lastValueFrom(this.cli.emit("callEvent", data));
+            return res;
+        } catch (e) {
+            return {
+                context:data,
+                status:"FAILED",
+                code: HttpStatus.SERVICE_UNAVAILABLE,
+                message: null,
+                error: null,
+                data: `${e}`
+            }
+        }
+
+    }
+    async callAction(data) {
+        try{
+            const res:any = await lastValueFrom(this.cli.send("callAction", data));
+            return res;
+        }  catch (e) {     
+          return {
+                context:data,
+                status:"FAILED",
+                code: HttpStatus.SERVICE_UNAVAILABLE,
+                message: null,
+                error: null,
+                data: `${e}`
+            }
+        }    
+    }
+}
